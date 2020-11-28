@@ -340,6 +340,11 @@ dtx_status_handle(struct dtx_resync_args *dra)
 		 */
 		dte = &dre->dre_dte;
 		rc = dtx_abort(cont, dre->dre_epoch, &dte, 1);
+
+		D_DEBUG(DB_TRACE, "As the new leader for TX "
+			DF_DTI", abort it: "DF_RC"\n",
+			DP_DTI(&dre->dre_xid), DP_RC(rc));
+
 		if (rc < 0)
 			err = rc;
 
@@ -347,6 +352,9 @@ dtx_status_handle(struct dtx_resync_args *dra)
 		continue;
 
 commit:
+		D_DEBUG(DB_TRACE, "As the new leader for TX "
+			DF_DTI", try to commit it.\n", DP_DTI(&dre->dre_xid));
+
 		if (++count >= DTX_THRESHOLD_COUNT) {
 			rc = dtx_resync_commit(cont, drh, count);
 			if (rc < 0)
@@ -451,6 +459,7 @@ dtx_resync(daos_handle_t po_hdl, uuid_t po_uuid, uuid_t co_uuid, uint32_t ver,
 	}
 
 	ABT_mutex_lock(cont->sc_mutex);
+
 	while (cont->sc_dtx_resyncing) {
 		if (!block) {
 			ABT_mutex_unlock(cont->sc_mutex);
@@ -466,6 +475,17 @@ dtx_resync(daos_handle_t po_hdl, uuid_t po_uuid, uuid_t co_uuid, uint32_t ver,
 		ABT_mutex_unlock(cont->sc_mutex);
 		goto out;
 	}
+
+	if (DAOS_FAIL_CHECK(DAOS_DTX_SRV_RESTART)) {
+		d_rank_t	myrank;
+
+		crt_group_rank(NULL, &myrank);
+		if (myrank == daos_fail_value_get()) {
+			dss_set_start_epoch();
+			vos_dtx_cache_reset(cont->sc_hdl);
+		}
+	}
+
 	cont->sc_dtx_resyncing = 1;
 	cont->sc_dtx_resync_ver = ver;
 	ABT_mutex_unlock(cont->sc_mutex);
