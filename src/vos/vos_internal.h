@@ -55,6 +55,7 @@
 		case -DER_INPROGRESS:			\
 		case -DER_EXIST:			\
 		case -DER_NONEXIST:			\
+		case -DER_TX_UNCERTAINTY:		\
 			__is_err = false;		\
 			break;				\
 		}					\
@@ -73,6 +74,7 @@
 		case -DER_INPROGRESS:			\
 		case -DER_EXIST:			\
 		case -DER_NONEXIST:			\
+		case -DER_TX_UNCERTAINTY:		\
 			__is_err = false;		\
 			break;				\
 		}					\
@@ -791,7 +793,7 @@ struct vos_iterator {
 	uint32_t		 it_ref_cnt;
 	uint32_t		 it_from_parent:1,
 				 it_for_purge:1,
-				 it_for_rebuild:1,
+				 it_for_migration:1,
 				 it_ignore_uncommitted:1;
 };
 
@@ -1043,8 +1045,8 @@ vos_iter_intent(struct vos_iterator *iter)
 {
 	if (iter->it_for_purge)
 		return DAOS_INTENT_PURGE;
-	if (iter->it_for_rebuild)
-		return DAOS_INTENT_REBUILD;
+	if (iter->it_for_migration)
+		return DAOS_INTENT_MIGRATION;
 	if (iter->it_ignore_uncommitted)
 		return DAOS_INTENT_IGNORE_NONCOMMITTED;
 	return DAOS_INTENT_DEFAULT;
@@ -1181,6 +1183,14 @@ vos_epc_punched(daos_epoch_t epc, uint16_t minor_epc,
 		return true;
 
 	return false;
+}
+
+static inline bool
+vos_detect_dtx_uncertainty(void)
+{
+	struct dtx_handle	*dth = vos_dth_get();
+
+	return dth != NULL && dth->dth_share_tbd_count > 0;
 }
 
 static inline bool

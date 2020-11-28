@@ -58,6 +58,7 @@ static int
 tree_is_empty(struct vos_object *obj, daos_handle_t toh,
 	      const daos_epoch_range_t *epr, vos_iter_type_t type)
 {
+	struct dtx_handle	*dth = vos_dth_get();
 	bool			 empty = true;
 	int			 rc;
 
@@ -65,7 +66,7 @@ tree_is_empty(struct vos_object *obj, daos_handle_t toh,
 	 *  when there are no committed entries
 	 */
 	rc = vos_iterate_key(obj, toh, type, epr, true, empty_tree_check,
-			     &empty, NULL);
+			     &empty, dth);
 
 	if (rc < 0)
 		return rc;
@@ -78,7 +79,7 @@ tree_is_empty(struct vos_object *obj, daos_handle_t toh,
 	 *  are, this will return -DER_INPROGRESS.
 	 */
 	rc = vos_iterate_key(obj, toh, type, epr, false, empty_tree_check,
-			     &empty, NULL);
+			     &empty, dth);
 
 	if (rc < 0)
 		return rc;
@@ -154,6 +155,7 @@ key_punch(struct vos_object *obj, daos_epoch_t epoch, daos_epoch_t bound,
 	  uint32_t pm_ver, daos_key_t *dkey, unsigned int akey_nr,
 	  daos_key_t *akeys, uint64_t flags, struct vos_ts_set *ts_set)
 {
+	struct dtx_handle	*dth = vos_dth_get();
 	struct vos_krec_df	*krec;
 	struct vos_rec_bundle	 rbund;
 	struct dcs_csum_info	 csum;
@@ -213,12 +215,22 @@ key_punch(struct vos_object *obj, daos_epoch_t epoch, daos_epoch_t bound,
 		rc = key_tree_punch(obj, toh, epoch, bound, &akeys[i], &riov,
 				    flags, ts_set, &dkey_info,
 				    &akey_info);
+		if (rc == -DER_TX_UNCERTAINTY &&
+		    dth->dth_share_tbd_count < DTX_UNCERTAINTY_MAX)
+			/* Continue to detect other potential
+			 * DTX uncertainty without real punch.
+			 */
+			continue;
+
 		if (rc != 0) {
 			VOS_TX_LOG_FAIL(rc, "Failed to punch akey: rc="
 					DF_RC"\n", DP_RC(rc));
 			break;
 		}
 	}
+
+	if (vos_detect_dtx_uncertainty())
+		goto out;
 
 	if (rc == 0 && (flags & VOS_OF_REPLAY_PC) == 0) {
 		/** Check if we need to propagate the punch */
@@ -252,7 +264,7 @@ punch_dkey:
 	if (!daos_handle_is_inval(toh))
 		key_tree_release(toh, 0);
 
-	return rc;
+	return vos_detect_dtx_uncertainty() ? -DER_TX_UNCERTAINTY : rc;
 }
 
 static int
@@ -1121,8 +1133,8 @@ done:
 		options |= EVT_ITER_REVERSE;
 	if (oiter->it_flags & VOS_IT_FOR_PURGE)
 		options |= EVT_ITER_FOR_PURGE;
-	if (oiter->it_flags & VOS_IT_FOR_REBUILD)
-		options |= EVT_ITER_FOR_REBUILD;
+	if (oiter->it_flags & VOS_IT_FOR_MIGRATION)
+		options |= EVT_ITER_FOR_MIGRATION;
 	return options;
 }
 
@@ -1302,8 +1314,8 @@ vos_obj_iter_prep(vos_iter_type_t type, vos_iter_param_t *param,
 	oiter->it_recx = param->ip_recx;
 	if (param->ip_flags & VOS_IT_FOR_PURGE)
 		oiter->it_iter.it_for_purge = 1;
-	if (param->ip_flags & VOS_IT_FOR_REBUILD)
-		oiter->it_iter.it_for_rebuild = 1;
+	if (param->ip_flags & VOS_IT_FOR_MIGRATION)
+		oiter->it_iter.it_for_migration = 1;
 	if (param->ip_flags == VOS_IT_KEY_TREE) {
 		/** Prepare the iterator from an already open tree handle.   See
 		 *  vos_iterate_key
@@ -1494,8 +1506,8 @@ vos_obj_iter_nested_prep(vos_iter_type_t type, struct vos_iter_info *info,
 		oiter->it_obj = obj;
 	if (info->ii_flags & VOS_IT_FOR_PURGE)
 		oiter->it_iter.it_for_purge = 1;
-	if (info->ii_flags & VOS_IT_FOR_REBUILD)
-		oiter->it_iter.it_for_rebuild = 1;
+	if (info->ii_flags & VOS_IT_FOR_MIGRATION)
+		oiter->it_iter.it_for_migration = 1;
 
 	switch (type) {
 	default:
