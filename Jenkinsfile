@@ -358,6 +358,10 @@ boolean skip_build_on_ubuntu_clang() {
 
 }
 
+boolean skip_build_on_leap15_gcc() {
+    return skip_stage('build-leap-gcc')
+}
+
 boolean skip_build_on_leap15_icc() {
     return target_branch == 'weekly-testing' ||
            skip_stage('build-leap15-icc') ||
@@ -931,6 +935,10 @@ pipeline {
                     }
                 }
                 stage('Build on Leap 15') {
+                    when {
+                        beforeAgent true
+                        expression { ! skip_build_on_leap15_gcc() }
+                    }
                     agent {
                         dockerfile {
                             filename 'Dockerfile.leap.15'
