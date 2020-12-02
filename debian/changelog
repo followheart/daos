@@ -1,3 +1,9 @@
+daos (1.1.1-9) unstable; urgency=medium
+  [ Li Wei ]
+  * Require raft-devel 0.7.1 that fixes recent Coverity issues
+
+ -- Li Wei <wei.g.li@intel.com>  Wed, 02 Dec 2020 14:40:00 +0800
+
 daos (1.1.1-8) unstable; urgency=medium
   [ Li Wei ]
   * Require raft-devel 0.7.0 that changes log indices and terms to 63-bit
