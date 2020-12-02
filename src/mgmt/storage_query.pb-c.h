@@ -217,10 +217,14 @@ struct  _Mgmt__DevStateReq
    * UUID of blobstore
    */
   char *dev_uuid;
+  /*
+   * transport ID of the VMD SSD for LED control
+   */
+  char *dev_traddr;
 };
 #define MGMT__DEV_STATE_REQ__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mgmt__dev_state_req__descriptor) \
-    , (char *)protobuf_c_empty_string }
+    , (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
 
 
 struct  _Mgmt__DevStateResp
@@ -235,13 +239,17 @@ struct  _Mgmt__DevStateResp
    */
   char *dev_uuid;
   /*
-   * Transport address of blobstore
+   * BIO device state
    */
   char *dev_state;
+  /*
+   * transport ID of the VMD SSD for LED control
+   */
+  char *dev_traddr;
 };
 #define MGMT__DEV_STATE_RESP__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mgmt__dev_state_resp__descriptor) \
-    , 0, (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
+    , 0, (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
 
 
 struct  _Mgmt__DevReplaceReq

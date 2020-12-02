@@ -153,22 +153,23 @@ func TestStorageCommands(t *testing.T) {
 		},
 		{
 			"Set FAULTY device status (force)",
-			"storage set nvme-faulty --uuid 842c739b-86b5-462f-a7ba-b4a91b674f3d -f",
+			"storage set nvme-faulty --uuid 842c739b-86b5-462f-a7ba-b4a91b674f3d --traddr 5d0505:01:00.0 -f",
 			printRequest(t, &control.SmdQueryReq{
 				UUID:      "842c739b-86b5-462f-a7ba-b4a91b674f3d",
+				Traddr:    "5d0505:01:00.0",
 				SetFaulty: true,
 			}),
 			nil,
 		},
 		{
 			"Set FAULTY device status (without force)",
-			"storage set nvme-faulty --uuid abcd",
+			"storage set nvme-faulty --uuid abcd --traddr efgh",
 			"StorageSetFaulty",
 			errors.New("consent not given"),
 		},
 		{
 			"Set FAULTY device status (with > 1 host)",
-			"-l host-[1-2] storage set nvme-faulty -f --uuid 842c739b-86b5-462f-a7ba-b4a91b674f3d",
+			"-l host-[1-2] storage set nvme-faulty -f --uuid 842c739b-86b5-462f-a7ba-b4a91b674f3d --traddr 5d0505:01:00.0",
 			"StorageSetFaulty",
 			errors.New("> 1 host"),
 		},
@@ -176,7 +177,7 @@ func TestStorageCommands(t *testing.T) {
 			"Set FAULTY device status without device specified",
 			"storage set nvme-faulty",
 			"StorageSetFaulty",
-			errors.New("the required flag `-u, --uuid' was not specified"),
+			errors.New("the required flags `--traddr' and `-u, --uuid' were not specified"),
 		},
 		{
 			"Nonexistent subcommand",

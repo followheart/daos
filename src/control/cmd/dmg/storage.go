@@ -315,8 +315,9 @@ type setFaultyCmd struct {
 // nvmeSetFaultyCmd is the struct representing the set-faulty storage subcommand
 type nvmeSetFaultyCmd struct {
 	smdQueryCmd
-	UUID  string `short:"u" long:"uuid" description:"Device UUID to set" required:"1"`
-	Force bool   `short:"f" long:"force" description:"Do not require confirmation"`
+	UUID   string `short:"u" long:"uuid" description:"Device UUID to set" required:"1"`
+	Traddr string `long:"traddr" description:"Transport address of the device" required:"1"`
+	Force  bool   `short:"f" long:"force" description:"Do not require confirmation"`
 }
 
 // Execute is run when nvmeSetFaultyCmd activates
@@ -335,6 +336,7 @@ func (cmd *nvmeSetFaultyCmd) Execute(_ []string) error {
 	ctx := context.Background()
 	req := &control.SmdQueryReq{
 		UUID:      cmd.UUID,
+		Traddr:    cmd.Traddr,
 		SetFaulty: true,
 	}
 	return cmd.makeRequest(ctx, req)

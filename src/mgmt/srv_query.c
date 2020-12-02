@@ -30,6 +30,7 @@
 
 #include "srv_internal.h"
 
+#define TRADDR_MAX 32
 
 static void
 bs_state_query(void *arg)
@@ -532,12 +533,18 @@ out:
 	return rc;
 }
 
+struct bio_faulty_dev_info {
+	uuid_t		devid;
+	char		traddr[TRADDR_MAX];
+};
+
 static void
 bio_faulty_state_set(void *arg)
 {
-	struct dss_module_info	*info = dss_get_module_info();
-	struct bio_xs_context	*bxc;
-	int			 rc;
+	struct bio_faulty_dev_info *faulty_info = arg;
+	struct dss_module_info	   *info = dss_get_module_info();
+	struct bio_xs_context	   *bxc;
+	int			    rc;
 
 	D_ASSERT(info != NULL);
 	D_DEBUG(DB_MGMT, "BIO health state set on xs:%d, tgt:%d\n",
@@ -555,16 +562,24 @@ bio_faulty_state_set(void *arg)
 		D_ERROR("Error setting FAULTY BIO device state\n");
 		return;
 	}
+
+	/* Set the LED of the VMD device to a FAULT state */
+	rc = bio_set_led_state(bxc, faulty_info->traddr, faulty_info->devid,
+			       "fault");
+	if (rc != 0)
+		D_ERROR("Error managing LED on device %s\n",
+			faulty_info->traddr);
 }
 
 int
-ds_mgmt_dev_set_faulty(uuid_t dev_uuid, Mgmt__DevStateResp *resp)
+ds_mgmt_dev_set_faulty(uuid_t dev_uuid, char *traddr, Mgmt__DevStateResp *resp)
 {
-	struct smd_dev_info	*dev_info;
-	ABT_thread		 thread;
-	int			 tgt_id;
-	int			 buflen = 10;
-	int			 rc = 0;
+	struct bio_faulty_dev_info  faulty_info = { 0 };
+	struct smd_dev_info	   *dev_info;
+	ABT_thread		    thread;
+	int			    tgt_id;
+	int			    buflen = 10;
+	int			    rc = 0;
 
 	if (uuid_is_null(dev_uuid))
 		return -DER_INVAL;
@@ -605,10 +620,21 @@ ds_mgmt_dev_set_faulty(uuid_t dev_uuid, Mgmt__DevStateResp *resp)
 
 	uuid_unparse_lower(dev_uuid, resp->dev_uuid);
 
+	D_ALLOC(resp->dev_traddr, strlen(traddr) + 1);
+	if (resp->dev_traddr == NULL) {
+		D_ERROR("Failed to allocate device traddr");
+		rc = -DER_NOMEM;
+		goto out;
+	}
+	strncpy(resp->dev_traddr, traddr, strlen(traddr));
+
+	uuid_copy(faulty_info.devid, dev_uuid);
+	strncpy(faulty_info.traddr, traddr, TRADDR_MAX - 1);
+
 	/* Create a ULT on the tgt_id */
 	D_DEBUG(DB_MGMT, "Starting ULT on tgt_id:%d\n", tgt_id);
 	/* TODO Add a new DSS_ULT_BIO tag */
-	rc = dss_ult_create(bio_faulty_state_set, NULL, DSS_ULT_GC,
+	rc = dss_ult_create(bio_faulty_state_set, &faulty_info, DSS_ULT_GC,
 			    tgt_id, 0, &thread);
 	if (rc != 0) {
 		D_ERROR("Unable to create a ULT on tgt_id:%d\n", tgt_id);
@@ -629,6 +655,8 @@ out:
 			D_FREE(resp->dev_state);
 		if (resp->dev_uuid != NULL)
 			D_FREE(resp->dev_uuid);
+		if (resp->dev_traddr != NULL)
+			D_FREE(resp->dev_traddr);
 	}
 
 	return rc;
@@ -721,7 +749,6 @@ out:
 	return rc;
 }
 
-#define TRADDR_MAX 32
 struct bio_identify_dev_info {
 	uuid_t		devid;
 	char		traddr[TRADDR_MAX];

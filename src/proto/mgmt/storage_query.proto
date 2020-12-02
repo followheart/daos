@@ -95,12 +95,14 @@ message SmdPoolResp {
 
 message DevStateReq {
 	string dev_uuid = 1; // UUID of blobstore
+	string dev_traddr = 2; // transport ID of the VMD SSD for LED control
 }
 
 message DevStateResp {
 	int32 status = 1; // DAOS error code
 	string dev_uuid = 2; // UUID of blobstore
-	string dev_state = 3; // Transport address of blobstore
+	string dev_state = 3; // BIO device state
+	string dev_traddr = 4; // transport ID of the VMD SSD for LED control
 }
 
 message DevReplaceReq {

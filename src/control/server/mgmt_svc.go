@@ -387,7 +387,8 @@ func (svc *mgmtSvc) smdSetFaulty(ctx context.Context, req *mgmtpb.SmdQueryReq) (
 	svc.log.Debugf("calling set-faulty on rank %d for %s", rank, req.Uuid)
 
 	dresp, err := srvs[0].CallDrpc(ctx, drpc.MethodSetFaultyState, &mgmtpb.DevStateReq{
-		DevUuid: req.Uuid,
+		DevUuid:   req.Uuid,
+		DevTraddr: req.Traddr,
 	})
 	if err != nil {
 		return nil, err
@@ -408,8 +409,9 @@ func (svc *mgmtSvc) smdSetFaulty(ctx context.Context, req *mgmtpb.SmdQueryReq) (
 				Rank: rank.Uint32(),
 				Devices: []*mgmtpb.SmdQueryResp_Device{
 					{
-						Uuid:  dsr.DevUuid,
-						State: dsr.DevState,
+						Uuid:   dsr.DevUuid,
+						State:  dsr.DevState,
+						TrAddr: dsr.DevTraddr,
 					},
 				},
 			},

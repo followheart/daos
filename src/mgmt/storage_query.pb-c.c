@@ -1348,7 +1348,7 @@ const ProtobufCMessageDescriptor mgmt__smd_pool_resp__descriptor =
   (ProtobufCMessageInit) mgmt__smd_pool_resp__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mgmt__dev_state_req__field_descriptors[1] =
+static const ProtobufCFieldDescriptor mgmt__dev_state_req__field_descriptors[2] =
 {
   {
     "dev_uuid",
@@ -1362,14 +1362,27 @@ static const ProtobufCFieldDescriptor mgmt__dev_state_req__field_descriptors[1] 
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "dev_traddr",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Mgmt__DevStateReq, dev_traddr),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mgmt__dev_state_req__field_indices_by_name[] = {
+  1,   /* field[1] = dev_traddr */
   0,   /* field[0] = dev_uuid */
 };
 static const ProtobufCIntRange mgmt__dev_state_req__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor mgmt__dev_state_req__descriptor =
 {
@@ -1379,14 +1392,14 @@ const ProtobufCMessageDescriptor mgmt__dev_state_req__descriptor =
   "Mgmt__DevStateReq",
   "mgmt",
   sizeof(Mgmt__DevStateReq),
-  1,
+  2,
   mgmt__dev_state_req__field_descriptors,
   mgmt__dev_state_req__field_indices_by_name,
   1,  mgmt__dev_state_req__number_ranges,
   (ProtobufCMessageInit) mgmt__dev_state_req__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mgmt__dev_state_resp__field_descriptors[3] =
+static const ProtobufCFieldDescriptor mgmt__dev_state_resp__field_descriptors[4] =
 {
   {
     "status",
@@ -1424,16 +1437,29 @@ static const ProtobufCFieldDescriptor mgmt__dev_state_resp__field_descriptors[3]
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "dev_traddr",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Mgmt__DevStateResp, dev_traddr),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mgmt__dev_state_resp__field_indices_by_name[] = {
   2,   /* field[2] = dev_state */
+  3,   /* field[3] = dev_traddr */
   1,   /* field[1] = dev_uuid */
   0,   /* field[0] = status */
 };
 static const ProtobufCIntRange mgmt__dev_state_resp__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor mgmt__dev_state_resp__descriptor =
 {
@@ -1443,7 +1469,7 @@ const ProtobufCMessageDescriptor mgmt__dev_state_resp__descriptor =
   "Mgmt__DevStateResp",
   "mgmt",
   sizeof(Mgmt__DevStateResp),
-  3,
+  4,
   mgmt__dev_state_resp__field_descriptors,
   mgmt__dev_state_resp__field_indices_by_name,
   1,  mgmt__dev_state_resp__number_ranges,

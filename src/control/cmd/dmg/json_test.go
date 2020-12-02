@@ -91,7 +91,7 @@ func TestDmg_JsonOutput(t *testing.T) {
 			case "storage query device-health":
 				testArgs = append(testArgs, []string{"-u", common.MockUUID()}...)
 			case "storage set nvme-faulty":
-				testArgs = append(testArgs, []string{"--force", "-u", common.MockUUID()}...)
+				testArgs = append(testArgs, []string{"--force", "--traddr", "5d0505:01:00.0", "-u", common.MockUUID()}...)
 			case "storage replace nvme":
 				testArgs = append(testArgs, []string{"--old-uuid", common.MockUUID(), "--new-uuid", common.MockUUID()}...)
 			case "storage identify":
