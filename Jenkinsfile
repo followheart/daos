@@ -359,7 +359,7 @@ boolean skip_build_on_ubuntu_clang() {
 }
 
 boolean skip_build_on_leap15_gcc() {
-    return skip_stage('build-leap-gcc')
+    return skip_stage('build-leap15-gcc')
 }
 
 boolean skip_build_on_leap15_icc() {
