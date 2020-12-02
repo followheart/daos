@@ -321,7 +321,8 @@ done
 if ! grep TIMEOUT_TEARDOWN \
     \$pydir/avocado/core/runner.py; then
     sudo cp \$pydir/avocado/core/runner.py{,.bak}
-    if ! sudo patch -p0 -d\$pydir < avocado_teardown_timeout.patch; then
+    if ! sudo patch -p0 -d\$pydir < \
+        $PREFIX/lib/daos/TESTING/ftest/avocado_teardown_timeout.patch; then
         echo \"Failed to apply avocado PR-3076 patch\"
         exit 1
     fi
