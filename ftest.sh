@@ -320,7 +320,7 @@ for loc in /usr/lib/python2*/site-packages/ \\
 done
 if ! grep TIMEOUT_TEARDOWN \
     \$pydir/avocado/core/runner.py; then
-    cp \$pydir/avocado/core/runner.py{,.bak}
+    sudo cp \$pydir/avocado/core/runner.py{,.bak}
     if ! sudo patch -p0 -d\$pydir < avocado_teardown_timeout.patch; then
         echo \"Failed to apply avocado PR-3076 patch\"
         exit 1
