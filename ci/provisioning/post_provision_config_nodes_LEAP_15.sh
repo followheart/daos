@@ -38,7 +38,8 @@ post_provision_config_nodes() {
          rm -f /etc/dnf.repos.d/*"$DAOS_STACK_GROUP_REPO"
          dnf config-manager \
              --add-repo="${REPOSITORY_URL}${DAOS_STACK_GROUP_REPO}"
-         # Need the GPG key for the GO language repo (part of the group repo above)
+         # Need the GPG key for the GO language repo (part of the group
+         # repo above)
          rpm --import \
            "${REPOSITORY_URL}${DAOS_STACK_GROUP_REPO%/*}/opensuse-15.2-devel-languages-go-x86_64-proxy/repodata/repomd.xml.key"
     fi

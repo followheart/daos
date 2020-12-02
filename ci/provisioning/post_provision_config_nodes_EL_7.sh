@@ -65,13 +65,7 @@ post_provision_config_nodes() {
             fi
             local repo="${JENKINS_URL}"job/daos-stack/job/"${repo}"/job/"${branch//\//%252F}"/"${build_number}"/artifact/artifacts/centos7/
             yum-config-manager --add-repo="${repo}"
-            pname=$(ls /etc/yum.repos.d/*.hpdd.intel.com_job_daos-stack_job_"${repo}"_job_"${branch//\//%252F}"_"${build_number}"_artifact_artifacts_centos7_.repo)
-            if [ "$pname" != "${pname//%252F/_}" ]; then
-                mv "$pname" "${pname//%252F/_}"
-            fi
-            pname="${pname//%252F/_}"
-            sed -i -e '/^\[/s/%252F/_/g' -e '$s/^$/gpgcheck = False/' "$pname"
-            cat "$pname"
+            disable_gpg_check "$repo"
             if [ -n "$INST_REPOS" ]; then
                 yum_repo_args+=",build.hpdd.intel.com_job_daos-stack*"
             fi
