@@ -379,7 +379,7 @@ EOF
         echo \"Failed to apply avocado PR-3076 patch\"
         exit 1
     fi
-    diff -u \$pydir/avocado/core/runner.py{.bak,}
+    diff -u \$pydir/avocado/core/runner.py{.bak,} || true
 fi
 # apply fix for https://github.com/avocado-framework/avocado/issues/2908
 sudo ed <<EOF \$pydir/avocado/core/runner.py
