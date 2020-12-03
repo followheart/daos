@@ -66,4 +66,4 @@ class AvocadoTests(Test):
 
         :avocado: tags=avocado_tests,avocado_test_teardown_timeout
         """
-        time.sleep(90)
+        time.sleep(5)
